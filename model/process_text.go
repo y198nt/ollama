@@ -30,7 +30,7 @@ type Vocabulary struct {
 	Scores []uint32
 	Merges []string
 
-	BOS, EOS uint32
+	BOS, EOS, UNK, SEP, PAD, CLS, MASK uint32
 
 	specialOnce sync.Once
 	special     []string
@@ -310,4 +310,26 @@ func (bpe BytePairEncoding) Decode(ids []int32) (string, error) {
 
 	slog.Debug("decoded", "ids", ids, "text", sb.String())
 	return sb.String(), nil
+}
+
+type WordPiece struct {
+	vocab *Vocabulary
+}
+
+func NewWordPiece(vocab *Vocabulary) WordPiece {
+	return WordPiece{
+		vocab: vocab,
+	}
+}
+
+func (wp WordPiece) Is(id uint32, special Special) bool {
+	panic("not implemented")
+}
+
+func (wp WordPiece) Encode(s string) ([]int32, error) {
+	panic("not implemented")
+}
+
+func (wp WordPiece) Decode(ids []int32) (string, error) {
+	panic("not implemented")
 }

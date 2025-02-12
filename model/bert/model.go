@@ -30,7 +30,7 @@ type Options struct {
 
 type Model struct {
 	model.Base
-	model.BytePairEncoding
+	model.WordPiece
 
 	TokenEmbedding     *nn.Embedding `gguf:"token_embd"`
 	TypeEmbedding      *nn.Embedding `gguf:"type_embd,alt:token_types"`
@@ -166,14 +166,18 @@ func (mlp *MLP) Forward(ctx ml.Context, hiddenState ml.Tensor, opts *Options) ml
 func New(c ml.Config) (model.Model, error) {
 	return &Model{
 		Layers: make([]EncoderLayer, c.Uint("block_count")),
-		BytePairEncoding: model.NewBytePairEncoding(
-			c.String("tokenizer.ggml.pretokenizer", `(?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\r\n\p{L}\p{N}]?\p{L}+|\p{N}{1,3}| ?[^\s\p{L}\p{N}]+[\r\n]*|\s*[\r\n]+|\s+(?!\S)|\s+`),
+		WordPiece: model.NewWordPiece(
 			&model.Vocabulary{
 				Values: c.Strings("tokenizer.ggml.tokens"),
 				Types:  c.Uints("tokenizer.ggml.token_type"),
-				Merges: c.Strings("tokenizer.ggml.merges"),
+				Scores: c.Uints("tokenizer.ggml.token_scores"),
 				BOS:    c.Uint("tokenizer.ggml.bos_token_id"),
 				EOS:    c.Uint("tokenizer.ggml.eos_token_id"),
+				UNK:    c.Uint("tokenizer.ggml.unknown_token_id"),
+				SEP:    c.Uint("tokenizer.ggml.separator_token_id"),
+				PAD:    c.Uint("tokenizer.ggml.padding_token_id"),
+				CLS:    c.Uint("tokenizer.ggml.cls_token_id"),
+				MASK:   c.Uint("tokenizer.ggml.mask_token_id"),
 			},
 		),
 		Options: &Options{
