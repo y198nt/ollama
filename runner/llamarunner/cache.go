@@ -258,7 +258,10 @@ func (c *InputCache) ShiftCacheSlot(slot *InputCacheSlot, numKeep int) error {
 		copy(afterDiscardInputs, slot.Inputs[numKeep+discard:])
 
 		// Update the inputs to match what would happen after a shift
-		slot.Inputs = append(keepInputs, afterDiscardInputs...)
+		newInputs := make([]input, 0, numKeep+len(afterDiscardInputs))
+		newInputs = append(newInputs, keepInputs...)
+		newInputs = append(newInputs, afterDiscardInputs...)
+		slot.Inputs = newInputs
 	}
 
 	return nil
