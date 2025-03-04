@@ -378,12 +378,6 @@ func TestShiftCacheSlot(t *testing.T) {
 				if !errors.As(err, &tt.wantErr) {
 					t.Errorf("Expected error of type %T but got %T: %v", tt.wantErr, err, err)
 				}
-
-				if errReproc, ok := err.(*ErrReprocessInputs); ok {
-					if errReproc.SlotId != slot.Id {
-						t.Errorf("ErrReprocessInputs has wrong SlotId: got %v, want %v", errReproc.SlotId, slot.Id)
-					}
-				}
 			} else if err != nil {
 				t.Errorf("Unexpected error: %v", err)
 			}
