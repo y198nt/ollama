@@ -388,9 +388,10 @@ func (s *Server) processBatch(tokenBatch *llama.Batch, embedBatch *llama.Batch) 
 				if len(seq.pendingInputs) == 0 {
 					err := s.cache.ShiftCacheSlot(seq.cache, seq.numKeep)
 					if err != nil {
-						if inr, ok := err.(*ErrReprocessInputs); ok {
+						var reprocess *ErrReprocessInputs
+						if errors.As(err, &reprocess) {
 							// Prepend these inputs to the sequence's inputs queue for reprocessing
-							seq.inputs = append(inr.Inputs, seq.inputs...)
+							seq.inputs = append(reprocess.Inputs, seq.inputs...)
 							// Continue processing as normal
 						} else {
 							return err

@@ -215,12 +215,10 @@ func (c *InputCache) ShiftDiscard(inputLen int, numKeep int) int {
 
 type ErrReprocessInputs struct {
 	Inputs []input
-	SlotId int
 }
 
 func (e *ErrReprocessInputs) Error() string {
-	return fmt.Sprintf("kv cache shift not supported, inputs need reprocessing (slot: %v, input count: %v)",
-		e.SlotId, len(e.Inputs))
+	return fmt.Sprintf("kv cache shift not supported, inputs need reprocessing (input count: %v)", len(e.Inputs))
 }
 
 // ShiftCacheSlot frees up space in the KV cache by deleting the oldest half of history
@@ -265,16 +263,12 @@ func (c *InputCache) ShiftCacheSlot(slot *InputCacheSlot, numKeep int) error {
 		copy(newInputs[:numKeep], slot.Inputs[:numKeep])
 		copy(newInputs[numKeep:], slot.Inputs[numKeep+discard:])
 
-		// Update the slot.Inputs to be empty since we've cleared the cache
-		// The transformer will rebuild these as the inputs are processed
+		// Reset the slot inputs since we've cleared the cache
 		slot.Inputs = []input{}
 
 		// Return the inputs that need to be reprocessed
 		// The caller will need to prepend these to the sequence's inputs queue
-		return &ErrReprocessInputs{
-			Inputs: newInputs,
-			SlotId: slot.Id,
-		}
+		return &ErrReprocessInputs{Inputs: newInputs}
 	}
 
 	return nil
