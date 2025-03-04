@@ -322,6 +322,7 @@ func (m *mockCache) Init(backend ml.Backend, dtype ml.DType, capacity int32)    
 func (m *mockCache) Close()                                                           {}
 func (m *mockCache) StartForward(ctx ml.Context, positions []int32, seqs []int) error { return nil }
 func (m *mockCache) CopyPrefix(srcSeq, dstSeq int, len int32)                         {}
+func (m *mockCache) SetConfig(ml.CacheConfig)                                         {}
 
 func TestShiftCacheSlot(t *testing.T) {
 	tests := []struct {
