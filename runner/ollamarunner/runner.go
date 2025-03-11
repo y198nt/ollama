@@ -360,7 +360,8 @@ func (s *Server) processBatch() error {
 						if errors.As(err, &reprocess) {
 							// Prepend these inputs to the sequence's inputs queue for reprocessing
 							seq.inputs = append(reprocess.Inputs, seq.inputs...)
-							// Continue processing as normal
+							// Return early to restart processing with the new inputs at the beginning
+							return nil
 						} else {
 							return err
 						}

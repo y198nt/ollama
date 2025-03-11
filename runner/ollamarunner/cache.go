@@ -268,7 +268,6 @@ func (c *InputCache) ShiftCacheSlot(slot *InputCacheSlot, numKeep int32) error {
 	slog.Debug("context limit hit - shifting", "id", slot.Id, "limit", c.numCtx, "input", len(slot.Inputs),
 		"keep", numKeep, "discard", discard)
 
-	// TODO (jessegross): KV cache removal can fail for certain types of models
 	if c.cache != nil {
 		err := c.cache.Remove(slot.Id, numKeep, numKeep+discard)
 		if err != nil {
