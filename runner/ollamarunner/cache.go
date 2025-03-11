@@ -242,7 +242,7 @@ func (c *InputCache) ShiftDiscard(inputLen int32, numKeep int32) int32 {
 }
 
 type ErrReprocessInputs struct {
-	Inputs []input
+	Inputs []input.Input
 }
 
 func (e *ErrReprocessInputs) Error() string {
@@ -279,12 +279,12 @@ func (c *InputCache) ShiftCacheSlot(slot *InputCacheSlot, numKeep int32) error {
 			_ = c.cache.Remove(slot.Id, 0, -1)
 
 			// Create new input slice with preserved tokens (numKeep + remaining tokens after discard)
-			newInputs := make([]input, numKeep+inputLen-(numKeep+discard))
+			newInputs := make([]input.Input, numKeep+inputLen-(numKeep+discard))
 			copy(newInputs[:numKeep], slot.Inputs[:numKeep])
 			copy(newInputs[numKeep:], slot.Inputs[numKeep+discard:])
 
 			// Reset the slot inputs since we've cleared the cache
-			slot.Inputs = []input{}
+			slot.Inputs = []input.Input{}
 
 			// Return error with inputs that need to be reprocessed
 			return &ErrReprocessInputs{Inputs: newInputs}
