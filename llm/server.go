@@ -796,6 +796,14 @@ func (s *llmServer) Completion(ctx context.Context, req CompletionRequest, fn fu
 			if err := json.Unmarshal(evt, &c); err != nil {
 				return fmt.Errorf("error unmarshalling llm prediction response: %v", err)
 			}
+			// convert internal done reason to one of our standard api format done reasons
+			switch c.DoneReason {
+			case "limit":
+				c.DoneReason = "length"
+			default:
+				c.DoneReason = "stop"
+			}
+
 			switch {
 			case strings.TrimSpace(c.Content) == lastToken:
 				tokenRepeat++
