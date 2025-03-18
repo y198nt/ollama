@@ -5,6 +5,7 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/ollama/ollama/fs"
 	"github.com/ollama/ollama/ml"
 	"github.com/ollama/ollama/model/input"
 )
@@ -292,7 +293,7 @@ func testCache(t *testing.T, backend ml.Backend, cache Cache, tests []testCase) 
 
 type testBackend struct{}
 
-func (b *testBackend) Config() ml.Config {
+func (b *testBackend) Config() fs.Config {
 	panic("not implemented")
 }
 
