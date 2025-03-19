@@ -649,7 +649,7 @@ func (s *Server) completion(w http.ResponseWriter, r *http.Request) {
 			} else {
 				if err := json.NewEncoder(w).Encode(&llm.CompletionResponse{
 					Done:               true,
-					DoneReason:         seq.doneReason,
+					DoneReason:         llm.ParseDoneReason(seq.doneReason),
 					PromptEvalCount:    seq.numPromptInputs,
 					PromptEvalDuration: seq.startGenerationTime.Sub(seq.startProcessingTime),
 					EvalCount:          seq.numDecoded,

@@ -675,9 +675,34 @@ type CompletionRequest struct {
 	Grammar string // set before sending the request to the subprocess
 }
 
+// DoneReason represents the reason why a completion response is done
+type DoneReason string
+
+const (
+	// DoneReasonStop indicates the completion stopped naturally
+	DoneReasonStop DoneReason = "stop"
+	// DoneReasonLength indicates the completion stopped due to length limits
+	DoneReasonLength DoneReason = "length"
+)
+
+func (d DoneReason) String() string {
+	return string(d)
+}
+
+// ParseDoneReason converts a string to a DoneReason type
+// If the string doesn't match any known reason, it defaults to DoneReasonStop
+func ParseDoneReason(reason string) DoneReason {
+	switch reason {
+	case "limit", "length":
+		return DoneReasonLength
+	default:
+		return DoneReasonStop
+	}
+}
+
 type CompletionResponse struct {
 	Content            string        `json:"content"`
-	DoneReason         string        `json:"done_reason"`
+	DoneReason         DoneReason    `json:"done_reason"`
 	Done               bool          `json:"done"`
 	PromptEvalCount    int           `json:"prompt_eval_count"`
 	PromptEvalDuration time.Duration `json:"prompt_eval_duration"`
@@ -786,7 +811,6 @@ func (s *llmServer) Completion(ctx context.Context, req CompletionRequest, fn fu
 				continue
 			}
 
-			// slog.Debug("got line", "line", string(line))
 			evt, ok := bytes.CutPrefix(line, []byte("data: "))
 			if !ok {
 				evt = line
@@ -795,13 +819,6 @@ func (s *llmServer) Completion(ctx context.Context, req CompletionRequest, fn fu
 			var c CompletionResponse
 			if err := json.Unmarshal(evt, &c); err != nil {
 				return fmt.Errorf("error unmarshalling llm prediction response: %v", err)
-			}
-			// convert internal done reason to one of our standard api format done reasons
-			switch c.DoneReason {
-			case "limit":
-				c.DoneReason = "length"
-			default:
-				c.DoneReason = "stop"
 			}
 
 			switch {
