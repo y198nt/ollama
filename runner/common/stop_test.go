@@ -4,36 +4,38 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+
+	"github.com/ollama/ollama/llm"
 )
 
 func TestTruncateStop(t *testing.T) {
 	tests := []struct {
 		name          string
-		pieces        []CompletionResponse
+		pieces        []llm.CompletionResponse
 		stop          string
-		expected      []CompletionResponse
+		expected      []llm.CompletionResponse
 		expectedTrunc bool
 	}{
 		{
 			name: "Single word",
-			pieces: []CompletionResponse{
+			pieces: []llm.CompletionResponse{
 				{Content: "Hello"},
 				{Content: "world"},
 			},
 			stop: "world",
-			expected: []CompletionResponse{
+			expected: []llm.CompletionResponse{
 				{Content: "Hello"},
 			},
 			expectedTrunc: false,
 		},
 		{
 			name: "Partial",
-			pieces: []CompletionResponse{
+			pieces: []llm.CompletionResponse{
 				{Content: "Hello"},
 				{Content: " wor"},
 			},
 			stop: "or",
-			expected: []CompletionResponse{
+			expected: []llm.CompletionResponse{
 				{Content: "Hello"},
 				{Content: " w"},
 			},
@@ -41,13 +43,13 @@ func TestTruncateStop(t *testing.T) {
 		},
 		{
 			name: "Suffix",
-			pieces: []CompletionResponse{
+			pieces: []llm.CompletionResponse{
 				{Content: "Hello"},
 				{Content: " there"},
 				{Content: "!"},
 			},
 			stop: "!",
-			expected: []CompletionResponse{
+			expected: []llm.CompletionResponse{
 				{Content: "Hello"},
 				{Content: " there"},
 			},
@@ -55,13 +57,13 @@ func TestTruncateStop(t *testing.T) {
 		},
 		{
 			name: "Suffix partial",
-			pieces: []CompletionResponse{
+			pieces: []llm.CompletionResponse{
 				{Content: "Hello"},
 				{Content: " the"},
 				{Content: "re!"},
 			},
 			stop: "there!",
-			expected: []CompletionResponse{
+			expected: []llm.CompletionResponse{
 				{Content: "Hello"},
 				{Content: " "},
 			},
@@ -69,12 +71,12 @@ func TestTruncateStop(t *testing.T) {
 		},
 		{
 			name: "Middle",
-			pieces: []CompletionResponse{
+			pieces: []llm.CompletionResponse{
 				{Content: "Hello"},
 				{Content: " wo"},
 			},
 			stop: "llo w",
-			expected: []CompletionResponse{
+			expected: []llm.CompletionResponse{
 				{Content: "He"},
 			},
 			expectedTrunc: true,
@@ -92,7 +94,7 @@ func TestTruncateStop(t *testing.T) {
 	}
 }
 
-func formatContentDiff(result, expected []CompletionResponse) string {
+func formatContentDiff(result, expected []llm.CompletionResponse) string {
 	var s string
 	for i := 0; i < len(result) || i < len(expected); i++ {
 		if i < len(result) && i < len(expected) && result[i].Content != expected[i].Content {

@@ -53,13 +53,13 @@ type Sequence struct {
 	pendingInputs []input.Input
 
 	// tokens that have been generated but not returned yet (e.g. for stop sequences)
-	pendingResponses []common.CompletionResponse
+	pendingResponses []llm.CompletionResponse
 
 	// input cache being used by this sequence
 	cache *InputCacheSlot
 
 	// channel to send responses over
-	responses chan common.CompletionResponse
+	responses chan llm.CompletionResponse
 
 	// channel to stop decoding (such as if the remote connection is closed)
 	quit chan bool
@@ -138,8 +138,8 @@ func (s *Server) NewSequence(prompt string, images []llm.ImageData, params NewSe
 		numPromptInputs:     len(inputs),
 		startProcessingTime: startTime,
 		numPredict:          params.numPredict,
-		pendingResponses:    make([]common.CompletionResponse, 0),
-		responses:           make(chan common.CompletionResponse, 100),
+		pendingResponses:    make([]llm.CompletionResponse, 0),
+		responses:           make(chan llm.CompletionResponse, 100),
 		quit:                make(chan bool, 1),
 		embedding:           make(chan []float32, 1),
 		sampler:             params.sampler,
@@ -289,7 +289,7 @@ func (s *Server) allNil() bool {
 
 func flushPending(seq *Sequence) bool {
 	pending := seq.pendingResponses
-	seq.pendingResponses = []common.CompletionResponse{}
+	seq.pendingResponses = []llm.CompletionResponse{}
 
 	for i, r := range pending {
 		if i == len(pending)-1 {
@@ -483,7 +483,7 @@ func (s *Server) processBatch() error {
 
 		seq.inputs = []input.Input{{Token: token}}
 
-		seq.pendingResponses = append(seq.pendingResponses, common.CompletionResponse{Content: piece})
+		seq.pendingResponses = append(seq.pendingResponses, llm.CompletionResponse{Content: piece})
 		sequence := ""
 		for _, r := range seq.pendingResponses {
 			sequence += r.Content
@@ -625,9 +625,7 @@ func (s *Server) completion(w http.ResponseWriter, r *http.Request) {
 			return
 		case content, ok := <-seq.responses:
 			if ok {
-				if err := json.NewEncoder(w).Encode(&llm.CompletionResponse{
-					Content: content,
-				}); err != nil {
+				if err := json.NewEncoder(w).Encode(&content); err != nil {
 					http.Error(w, fmt.Sprintf("failed to encode response: %v", err), http.StatusInternalServerError)
 					close(seq.quit)
 					return

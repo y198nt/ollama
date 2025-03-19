@@ -2,6 +2,8 @@ package common
 
 import (
 	"strings"
+
+	"github.com/ollama/ollama/llm"
 )
 
 func FindStop(sequence string, stops []string) (bool, string) {
@@ -29,7 +31,7 @@ func ContainsStopSuffix(sequence string, stops []string) bool {
 // truncateStop removes the provided stop string from pieces,
 // returning the partial pieces with stop removed, including truncating
 // the last piece if required (and signalling if this was the case)
-func TruncateStop(resps []CompletionResponse, stop string) ([]CompletionResponse, bool) {
+func TruncateStop(resps []llm.CompletionResponse, stop string) ([]llm.CompletionResponse, bool) {
 	var sequence string
 	for _, resp := range resps {
 		sequence += resp.Content
@@ -45,7 +47,7 @@ func TruncateStop(resps []CompletionResponse, stop string) ([]CompletionResponse
 		return nil, true
 	}
 
-	result := make([]CompletionResponse, 0, len(resps))
+	result := make([]llm.CompletionResponse, 0, len(resps))
 
 	// Track position in truncated sequence
 	pos := 0
@@ -60,7 +62,7 @@ func TruncateStop(resps []CompletionResponse, stop string) ([]CompletionResponse
 			truncationHappened = true
 		}
 		if len(chunk) > 0 {
-			result = append(result, CompletionResponse{Content: chunk})
+			result = append(result, llm.CompletionResponse{Content: chunk})
 		}
 		pos += len(resp.Content)
 	}
