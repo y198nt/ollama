@@ -35,7 +35,7 @@ func parseSafetensors(fsys fs.FS, replacer *strings.Replacer, ps ...string) ([]T
 		if err := binary.Read(f, binary.LittleEndian, &n); err != nil {
 			return nil, err
 		}
-				// Validate the value of n
+		// Validate the value of n
 		if n <= 0 || n > 1<<30 { // Example: Limit n to 1GB for safety
 			return nil, fmt.Errorf("invalid or excessive size for safetensors file: %d", n)
 		}
